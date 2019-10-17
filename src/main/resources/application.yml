@@ -1,0 +1,16 @@
+logging:
+    level:
+        ROOT: INFO
+        io.github.jhipster: INFO
+        com.simba.eshighlevelrestclient: INFO
+
+server:
+    port: 8087
+
+es:
+    host: 127.0.0.1
+    port: 9200
+    protocol: http
+    timeout: 5000
+    index: profile
+    type: _doc
