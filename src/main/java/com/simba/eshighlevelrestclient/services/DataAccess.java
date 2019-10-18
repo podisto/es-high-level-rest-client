@@ -13,4 +13,6 @@ public interface DataAccess {
     String createProfile(ProfileDocument document) throws IOException;
 
     SearchResponse query() throws IOException;
+
+    SearchResponse searchByTechnology(String technology) throws IOException;
 }

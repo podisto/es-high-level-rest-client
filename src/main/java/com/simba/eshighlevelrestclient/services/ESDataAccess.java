@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simba.eshighlevelrestclient.client.ElasticSearchClient;
 import com.simba.eshighlevelrestclient.domain.ProfileDocument;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +30,7 @@ public class ESDataAccess implements DataAccess {
     private String index;
     @Value("${es.type}")
     private String type;
+    private static final String CLASS_NAME = ESDataAccess.class.getSimpleName();
 
     private final ElasticSearchClient esClient;
     private final ObjectMapper mapper;
@@ -39,7 +42,7 @@ public class ESDataAccess implements DataAccess {
 
     @Override
     public String createProfile(ProfileDocument document) throws IOException {
-        log.info("{} create Index {} with index {}, type {} ", ESDataAccess.class.getSimpleName(), document, index, type);
+        log.info("{} create Index {} with index {}, type {} ", CLASS_NAME, document, index, type);
         Map<String, Object> documentMapper = mapper.convertValue(document, Map.class);
         IndexRequest indexRequest = new IndexRequest(index, type, document.getId()).source(documentMapper);
         IndexResponse indexResponse = esClient.getClient().index(indexRequest, RequestOptions.DEFAULT);
@@ -56,6 +59,17 @@ public class ESDataAccess implements DataAccess {
         searchRequest.source(searchSourceBuilder);
 
         return esClient.getClient().search(searchRequest, RequestOptions.DEFAULT);
+    }
+
+    @Override
+    public SearchResponse searchByTechnology(String technology) throws IOException {
+        SearchRequest searchRequest = buildSearchRequest(index, type);
+        SearchSourceBuilder source = new SearchSourceBuilder();
+        QueryBuilder queryBuilder = QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("technologies.name", technology));
+        source.query(QueryBuilders.nestedQuery("technologies", queryBuilder, ScoreMode.None));
+        searchRequest.source(source);
+        log.info("{} searchRequest = {} ", CLASS_NAME, searchRequest);
+       return esClient.getClient().search(searchRequest, RequestOptions.DEFAULT);
     }
 
     private SearchRequest buildSearchRequest(String index, String type) {

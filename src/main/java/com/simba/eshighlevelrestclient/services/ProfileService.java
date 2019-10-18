@@ -46,6 +46,12 @@ public class ProfileService {
         return getSearchResult(searchResponse);
     }
 
+    public List<ProfileDocument> findByTechnology(String technology) throws IOException {
+        SearchResponse searchResponse = dataAccess.searchByTechnology(technology);
+        log.info("response = {} ", searchResponse);
+        return getSearchResult(searchResponse);
+    }
+
     private List<ProfileDocument> getSearchResult(SearchResponse response) {
         SearchHit[] searchHit = response.getHits().getHits();
         List<ProfileDocument> profileDocuments = new ArrayList<>();

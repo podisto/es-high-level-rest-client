@@ -46,4 +46,14 @@ public class ProfileResource {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ArrayList<>());
         }
     }
+
+    @GetMapping("/search")
+    public List<ProfileDocument> search(@RequestParam(value = "technology") String technology) {
+        log.info("{} search by technology {} ", CLASS_NAME, technology);
+        try {
+            return service.findByTechnology(technology);
+        } catch (IOException e) {
+            return new ArrayList<>();
+        }
+    }
 }
