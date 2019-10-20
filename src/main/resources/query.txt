@@ -1,0 +1,150 @@
+{
+  "firstName": "Bob",
+  "lastName": "Labla",
+  "emails": ["blob@gmail.com"],
+  "technologies": [
+    {
+      "name": "Angular6",
+      "yearsOfExperience": "1 year"
+    },
+    {
+      "name": "TensorFlowJS",
+      "yearsOfExperience": "2 years"
+    },
+    {
+      "name": "Docker",
+      "yearsOfExperience": "2 years"
+    },
+    {
+      "name": "AWS",
+      "yearsOfExperience": "2 years"
+    }
+  ]
+}
+
+{
+  "firstName": "Omar",
+  "lastName": "Dione",
+  "emails": ["omardione1991@gmail.com", "simbadeveloppement@gmail.com"],
+  "technologies": [
+    {
+      "name": "Angular6",
+      "yearsOfExperience": "2 year"
+    },
+    {
+      "name": "Java",
+      "yearsOfExperience": "3 years"
+    },
+    {
+      "name": "Docker",
+      "yearsOfExperience": "1 years"
+    },
+    {
+      "name": "Spring",
+      "yearsOfExperience": "2 years"
+    }
+  ]
+}
+
+{
+  "firstName": "Abdou",
+  "lastName": "Diagne",
+  "emails": ["updo@gmail.com"],
+  "technologies": [
+    {
+      "name": "Angular6",
+      "yearsOfExperience": "3 years"
+    },
+    {
+      "name": "Java",
+      "yearsOfExperience": "3 years"
+    },
+    {
+      "name": "PHP",
+      "yearsOfExperience": "5 years"
+    }
+  ]
+}
+
+PUT /profile
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 2
+  },
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "firstName": {"type": "text"},
+        "lastName": {"type": "text"},
+        "technologies": {"type": "nested"},
+        "emails": { "type": "text" }
+      }
+    }
+  }
+}
+
+DELETE /profile?pretty=true
+
+GET /profile/_search?&pretty=true
+
+
+GET /profile/_search
+{
+    "query":  {
+        "nested" : {
+            "path" : "technologies",
+            "query" : {
+                "bool" : {
+                    "must" : [
+                      { "match" : {"technologies.name" : "Angular6"} }
+                    ]
+                }
+            },
+            "score_mode" : "avg"
+        }
+    }
+}
+
+GET /profile/_search
+{
+  "query": {
+    "nested": {
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "technologies.name": {
+                  "query": "Angular6",
+                  "operator": "OR",
+                  "prefix_length": 0,
+                  "max_expansions": 50,
+                  "fuzzy_transpositions": true,
+                  "lenient": false,
+                  "zero_terms_query": "NONE",
+                  "auto_generate_synonyms_phrase_query": true,
+                  "boost": 1
+                }
+              }
+            }
+          ],
+          "adjust_pure_negative": true,
+          "boost": 1
+        }
+      },
+      "path": "technologies",
+      "ignore_unmapped": false,
+      "score_mode": "avg",
+      "boost": 1
+    }
+  }
+}
+
+POST /profile/_search
+{
+  "query":
+    {"match_all":
+      { "boost":1.0 }
+    }
+}

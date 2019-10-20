@@ -36,7 +36,7 @@ public class ElasticSearchClient {
                                         .setConnectionRequestTimeout(timeout)
                                         .setSocketTimeout(timeout))
                 ));
-        log.info("{} ES Client built {} ", ElasticSearchClient.class.getSimpleName(), client);
+        log.info("=== {} ES Client built === ", ElasticSearchClient.class.getSimpleName());
         return client;
     }
 }
