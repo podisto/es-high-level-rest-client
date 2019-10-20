@@ -9,6 +9,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.stereotype.Component;
@@ -34,12 +35,10 @@ public class ESDataAccess<T> implements DataAccess<T> {
         this.mapper = mapper;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public IndexResponse index(String index, String type, T document, String id) throws IOException {
         log.info("=== {} create Index {} with index {}, type {} === ", CLASS_NAME, document, index, type);
-        Map<String, Object> documentMapper = mapper.convertValue(document, Map.class);
-        IndexRequest indexRequest = new IndexRequest(index, type, id).source(documentMapper);
+        IndexRequest indexRequest = new IndexRequest(index, type, id).source(convertProfileDocumentToMap(document), XContentType.JSON);
         return esClient.getClient().index(indexRequest, RequestOptions.DEFAULT);
     }
 
@@ -47,27 +46,22 @@ public class ESDataAccess<T> implements DataAccess<T> {
     public SearchResponse query(String index, String type, QueryBuilder queryBuilder) throws IOException {
         log.info("=== {} query === ", CLASS_NAME);
         SearchRequest searchRequest = buildSearchRequest(index, type);
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(queryBuilder);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder().query(queryBuilder);
         searchRequest.source(searchSourceBuilder);
         log.info("=== searchRequest built {} === ", searchRequest);
         return esClient.getClient().search(searchRequest, RequestOptions.DEFAULT);
     }
 
-    /*public SearchResponse searchByTechnology(String technology) throws IOException {
-        SearchRequest searchRequest = buildSearchRequest(index, type);
-        SearchSourceBuilder source = new SearchSourceBuilder();
-        QueryBuilder queryBuilder = QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("technologies.name", technology));
-        source.query(QueryBuilders.nestedQuery("technologies", queryBuilder, ScoreMode.None));
-        searchRequest.source(source);
-        log.info("{} searchRequest = {} ", CLASS_NAME, searchRequest);
-       return esClient.getClient().search(searchRequest, RequestOptions.DEFAULT);
-    }*/
-
     private SearchRequest buildSearchRequest(String index, String type) {
-        return new SearchRequest()
-                .indices(index)
-                .types(type)
-                .indicesOptions(IndicesOptions.LENIENT_EXPAND_OPEN);
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices(index);
+        searchRequest.types(type);
+        searchRequest.indicesOptions(IndicesOptions.LENIENT_EXPAND_OPEN);
+        return searchRequest;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> convertProfileDocumentToMap(T document) {
+        return mapper.convertValue(document, Map.class);
     }
 }
