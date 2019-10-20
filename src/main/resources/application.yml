@@ -12,11 +12,5 @@ es:
     port: 9200
     protocol: http
     timeout: 5000
-    indexes:
-        profile:
-            index: profile
-            type: _doc
-        caom:
-            index: caompdv_2019
-            type: capdvom
-
+    index: profile
+    type: _doc
